@@ -216,3 +216,33 @@ Web:
 - Flutter UI tests for transfer states and errors
 - Desktop smoke tests on Linux, macOS, and Windows
 - Corrupted-data, interrupted-transfer, permission, and insufficient-space tests
+
+
+## Approved PoC operation decisions
+
+The path-based PoC supports both copy and move operations. Its operation API accepts source, destination, mode, and configurable settings.
+
+Destination behavior is rsync-inspired:
+
+- equivalent files can be skipped
+- metadata is compared before checksums where possible
+- update and overwrite behavior is configurable
+- newer destination files are handled according to settings
+- conflicts are reported rather than hidden
+- move removes the source only after successful destination verification
+
+The CLI calls the Rust API directly. Flutter calls the same API through the generated bridge. Rust owns operation state and filesystem behavior; Flutter owns controls and presentation.
+
+
+## Settled PoC defaults
+
+- Use flutter_rust_bridge or its current successor for generated Flutter/Rust bindings.
+- Support regular files, directories, and hidden files.
+- Preserve basic timestamps.
+- Defer symbolic-link policy and complete permission preservation.
+- Default to copy mode.
+- Do not overwrite newer destination files by default.
+- Skip files with matching size and modification time.
+- Allow optional checksum comparison.
+- Require an explicit overwrite setting.
+- Remove a source only after a move destination has been successfully written and verified.

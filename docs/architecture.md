@@ -160,3 +160,38 @@ QR transport is experimental and should not influence MVP interfaces beyond keep
 - Which encryption, device-authentication, and key-management details are appropriate?
 - Which persistence layer is needed for known devices and transfer history?
 - Which local-IP discovery method should be added after manual endpoint entry works?
+
+
+## PoC operation API and semantics
+
+The first path-based PoC supports both copy and move modes through a shared Rust operation API. The API accepts a source, destination, operation mode, and settings; reports progress and state; supports cancellation; and returns structured results and errors.
+
+The CLI calls this Rust API directly. Flutter calls the same API through the generated Rust bridge.
+
+Rust owns operation state, filesystem work, comparison, checksums, and errors. Flutter owns path pickers, controls, progress views, status messages, and layout.
+
+Destination handling is configurable with rsync-inspired settings:
+
+- skip files that are already equivalent
+- compare metadata before checksums where possible
+- use checksums when configured or needed
+- update or overwrite according to the selected setting
+- handle newer destination files according to the selected setting
+- report conflicts instead of making hidden destructive choices
+- remove the source only after a move has completed and the destination has been verified
+
+Safe defaults should avoid unexpected data loss.
+
+
+## Settled PoC decisions
+
+- Use flutter_rust_bridge or its current successor as the initial generated Flutter/Rust binding approach.
+- Support regular files and directories, including hidden files.
+- Preserve basic timestamps.
+- Defer symbolic-link policy and complete permission preservation.
+- Default to copy mode.
+- Do not overwrite newer destination files by default.
+- Skip files with matching size and modification time.
+- Allow optional checksum comparison for stronger verification.
+- Require an explicit setting to overwrite.
+- In move mode, remove the source only after the destination is successfully written and verified.

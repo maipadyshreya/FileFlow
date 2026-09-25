@@ -103,3 +103,32 @@ These outcomes are intentionally platform-neutral. Detailed acceptance criteria 
 | US-12 | Transfers use the selected security protocol, and an untrusted peer cannot access transfer contents. |
 
 The requirement IDs above are canonical for design notes, issues, tests, and implementation tasks.
+
+
+## PoC operation semantics
+
+The first PoC supports both copy and move modes. Destination handling is configurable and follows rsync-inspired principles:
+
+- skip files that are already equivalent
+- compare metadata before checksums where possible
+- use checksums when configured or needed
+- update or overwrite according to the selected setting
+- handle newer destination files according to the selected setting
+- report conflicts instead of making hidden destructive choices
+- remove the source only after a move has completed and the destination has been verified
+
+The CLI and Flutter shell use the same Rust operation API. Rust owns comparison, filesystem work, checksums, state, and errors. Flutter owns controls, path selection, progress display, status messages, and layout.
+
+
+## Settled PoC defaults
+
+- The initial Flutter/Rust bridge will use flutter_rust_bridge or its current successor.
+- The PoC supports regular files, directories, and hidden files.
+- The PoC preserves basic timestamps.
+- Symbolic-link behavior and complete permission preservation are deferred.
+- Copy is the default operation mode.
+- Newer destination files are not overwritten by default.
+- Files with matching size and modification time are skipped.
+- Optional checksum comparison provides stronger verification.
+- Overwriting requires an explicit setting.
+- Move removes the source only after successful destination verification.
